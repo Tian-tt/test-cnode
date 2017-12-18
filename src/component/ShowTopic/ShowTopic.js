@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 class ShowTopic extends React.Component {
   state = {
     data:null,
+    content:''
   }
 
   componentDidMount() {
@@ -25,6 +26,7 @@ class ShowTopic extends React.Component {
     })
   }
   handleSubmit = () => {
+
     const data = {
       accesstoken:sessionStorage.token,
       content:this.state.content,
@@ -35,6 +37,16 @@ class ShowTopic extends React.Component {
     axios.post(`https://cnodejs.org/api/v1/topic/${this.state.data.id}/replies`,data)
     .then( res => {
       console.log(res)
+      const { id } = this.props.match.params
+      axios.get(`https://cnodejs.org/api/v1/topic/${id}`)
+      .then(res => {
+        this.setState({
+          data:res.data.data
+        })
+      })
+      .catch( err => {
+        alert(err)
+      })
       this.setState({
         content:''
       })
@@ -53,7 +65,8 @@ class ShowTopic extends React.Component {
           <span> 浏览量:{data.visit_count} </span>
           <span> 发布于{data.create_at} </span>
         </p>
-        <Link to='/topic/create'><button className='update' >编辑</button></Link>
+
+        <Link to={{pathname: '/topic/create',state: {data:this.state.data,content:this.state.content}}}><button className='update' >编辑</button></Link>
         <button className='delete' >删除</button>
         <div className="topic-content">
           <div dangerouslySetInnerHTML={ {__html: data.content} } />
